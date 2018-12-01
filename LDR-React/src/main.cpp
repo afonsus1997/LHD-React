@@ -1,33 +1,67 @@
-#include <Arduino.h>
-#include "react.h"
 
+
+
+
+#include <SPIFFS.h>
+
+#include <WiFi.h>
+#include <WiFiClient.h>
+#include <WiFiServer.h>
+#include <WiFiUdp.h>
+#include <ESPAsyncWebServer.h>
+#include <AsyncTCP.h>
+#include <WiFiAP.h>
+#include "react.h"
 
 const char* ssid = "LHD-React";
 const char* password =  "1234567890";
- 
+ int led=0;
 AsyncWebServer server(80);
+ 
+int reactStart(){
+    //tell user to get ready
+    long timedif;
+    long randNumber;
+    int btnState;
+    randomSeed(analogRead(0));
+    randNumber = random(1,2)*1000;
+    delay(randNumber);
+    long startTime = millis();
+    //Serial.print(startTime);
+    digitalWrite(LEDPIN, 1);
 
-const int buttonPin = 22;    // the number of the pushbutton pin
-const int ledPin = 19;      // the number of the LED pin
+    while(1){
+      btnState = (digitalRead(SWPIN));
+     if(!btnState){
+       break;
+     }
+     else
+     delay(10);
+    }
+    digitalWrite(LEDPIN, 0);
+    Serial.println("Btn Pressed");
+    return millis() - startTime;
 
-// Variables will change:
-int ledState = HIGH;         // the current state of the output pin
-int buttonState;             // the current reading from the input pin
-int lastButtonState = LOW;   // the previous reading from the input pin
-
-// the following variables are unsigned longs because the time, measured in
-// milliseconds, will quickly become a bigger number than can be stored in an int.
-unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
-unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
-
-void setup() {
-  pinMode(buttonPin, INPUT_PULLUP);
-  pinMode(ledPin, OUTPUT);
-
-  // set initial LED state
-  digitalWrite(ledPin, ledState);
+}
 
 
+void handleString(AsyncWebServerRequest *request){
+
+  
+  String t_state = String(request->arg("StringTxt")); //Refer  xhttp.open("GET", "StringState?StringTxt="+value, true);
+  Serial.println("Got Name " + t_state);
+  request->send(200);
+}
+
+void handleSendScore(AsyncWebServerRequest *request) {
+  int time = reactStart();
+  Serial.print("TIME: "); Serial.println(time);    
+  String sendString = "{\"Score\": " + String(time) + "}";
+  request->send(200, "application/json", sendString); 
+}
+
+
+void setup(){
   Serial.begin(115200);
  
   if(!SPIFFS.begin()){
@@ -35,55 +69,34 @@ void setup() {
         return;
   }
  
-  WiFi.begin(ssid, password);
+  pinMode(LEDPIN, OUTPUT);
+  pinMode(SWPIN, INPUT_PULLUP);
+   
+  WiFi.softAP(ssid, password);
+  IPAddress myIP = WiFi.softAPIP();
+  Serial.print("AP IP address: ");
+  Serial.println(myIP);
  
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.println("Connecting to WiFi..");
-  }
+  //server.on("/html", HTTP_GET, [](AsyncWebServerRequest *request){
+  //  request->send(SPIFFS, "/index.html");
+  //});
  
-  Serial.println(WiFi.localIP());
- 
-  server.on("/html", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(SPIFFS, "/index.html", "text/html");
+  server.on("/heap", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(200, "text/plain", String(ESP.getFreeHeap()));
   });
- 
-  server.begin();
-
-}
-
-void loop() {
   
-  int reading = !digitalRead(buttonPin);
+  server.on("/Score", handleSendScore);
 
-  // check to see if you just pressed the button
-  // (i.e. the input went from LOW to HIGH), and you've waited long enough
-  // since the last press to ignore any noise:
+  
+  server.on("/StringState", handleString);
+  
 
-  // If the switch changed, due to noise or pressing:
-  if (reading != lastButtonState) {
-    // reset the debouncing timer
-    lastDebounceTime = millis();
-  }
 
-  if ((millis() - lastDebounceTime) > debounceDelay) {
-    // whatever the reading is at, it's been there for longer than the debounce
-    // delay, so take it as the actual current state:
+  server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
 
-    // if the button state has changed:
-    if (reading != buttonState) {
-      buttonState = reading;
-
-      // only toggle the LED if the new button state is HIGH
-      if (buttonState == HIGH) {
-        ledState = !ledState;
-      }
-    }
-  }
-
-  // set the LED:
-  digitalWrite(ledPin, ledState);
-
-  // save the reading. Next time through the loop, it'll be the lastButtonState:
-  lastButtonState = reading;
+  server.begin();
 }
+ 
+void loop(){}
+
+

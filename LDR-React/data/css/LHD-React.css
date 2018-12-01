@@ -27,9 +27,8 @@ body{
 }
 
 .leaderboard h1{
-    text-align: center;
     text-transform: uppercase;
-    margin:30px;
+    margin:3px;
     padding:0;
     color: orange;
 }
@@ -47,7 +46,7 @@ body{
     padding:0;
     list-style: none;
     border:5px solid #CCC;
-    background: grey;
+    background: black;
 }
 .content ul li{
     position: relative;
@@ -67,7 +66,7 @@ body{
 .count{
     display:inline-block;
     float:right;
-    color:#F00;
+    color:orange;
     font-weight:bold;
 }
 .count:after{
