@@ -1,25 +1,24 @@
-var stringFrom = document.getElementById("displaytext");
-var sendButton = document.getElementById("sendbtn");
-
-sendButton.addEventListener(onclick, button_handler);
-
-function button_handler(){
-  stringFrom.value = "";
-  sendString();
-  
-}
 
 
+  function button_handler(){
+    var typedInName = document.getElementById("nameText").value;
+    var typedInValue = document.getElementById("valueText").value;
+    
+    console.log(typedInName)
+    sendString(typedInName);
+    
+  }
 
-  function sendString(value) {
+
+
+  function sendString(typedInName) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
       if (this.readyState == 4 && this.status == 200) {
-        //document.getElementById("LEDState").innerHTML =
-        //this.responseText;
+        //document.getElementById("LEDState").innerHTML = this.responseText;
       }
     };
-    xhttp.open("GET", "StringState?StringTxt="+stringFrom.value , true);
+    xhttp.open("GET", "StringState?StringTxt="+typedInName , true);
     xhttp.send();
   }
    
