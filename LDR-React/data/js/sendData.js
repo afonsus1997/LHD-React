@@ -9,8 +9,6 @@
     
   }
 
-
-
   function sendString(typedInName) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
