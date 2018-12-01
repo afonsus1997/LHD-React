@@ -1,7 +1,14 @@
 #include <Arduino.h>
+#include "react.h"
 
-const int buttonPin = 21;    // the number of the pushbutton pin
-const int ledPin = 22;      // the number of the LED pin
+
+const char* ssid = "LHD-React";
+const char* password =  "1234567890";
+ 
+AsyncWebServer server(80);
+
+const int buttonPin = 22;    // the number of the pushbutton pin
+const int ledPin = 19;      // the number of the LED pin
 
 // Variables will change:
 int ledState = HIGH;         // the current state of the output pin
@@ -19,10 +26,34 @@ void setup() {
 
   // set initial LED state
   digitalWrite(ledPin, ledState);
+
+
+  Serial.begin(115200);
+ 
+  if(!SPIFFS.begin()){
+        Serial.println("An Error has occurred while mounting SPIFFS");
+        return;
+  }
+ 
+  WiFi.begin(ssid, password);
+ 
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println("Connecting to WiFi..");
+  }
+ 
+  Serial.println(WiFi.localIP());
+ 
+  server.on("/html", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(SPIFFS, "/index.html", "text/html");
+  });
+ 
+  server.begin();
+
 }
 
 void loop() {
-  // read the state of the switch into a local variable:
+  
   int reading = !digitalRead(buttonPin);
 
   // check to see if you just pressed the button
