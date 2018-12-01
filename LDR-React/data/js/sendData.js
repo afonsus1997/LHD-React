@@ -28,7 +28,7 @@
     
 
       // request data every 5 seconds
-      //setInterval(requestData, 5000);
+      //setTimeout(requestData, 10000);
 
       function requestData() {
   
@@ -54,7 +54,6 @@
       }
 
       requestData();
-      
       
   
     console.log("return");
