@@ -66,13 +66,15 @@
       var addName = typedInName;
       var addScore = score;
       var t = $('#leaderboard').DataTable();
-  
+
+      
+
       t.row.add( [
         addName,
         addScore
         ] ).draw( false );
-
-      t.sort();
+      console.log(t);
+      t.order(1, "asc");
        
   } 
   

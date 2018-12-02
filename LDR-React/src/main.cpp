@@ -24,7 +24,7 @@ int reactStart(){
     long randNumber;
     int btnState;
     randomSeed(analogRead(0));
-    randNumber = random(1,10)*1000;
+    randNumber = random(1,8)*1000;
     delay(randNumber);
     long startTime = millis();
     //Serial.print(startTime);
